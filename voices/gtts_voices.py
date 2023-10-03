@@ -6,7 +6,8 @@ from gtts import gTTS
 from pygame import mixer
 from .basic import Voice
 
-mixer.pre_init(60_000, -16, 2, 2048)
+# mixer.pre_init(44100, -16, 2, 2048)
+mixer.pre_init(100_000, -16, 2, 2048)
 mixer.init()
 
 

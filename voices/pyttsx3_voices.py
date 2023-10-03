@@ -6,7 +6,7 @@ from .basic import Voice
 
 class VoiceRate(Enum):
     SLOW = 100
-    NORMAL = 150
+    NORMAL = 200
     FAST = 300
 
 
