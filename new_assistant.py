@@ -114,12 +114,16 @@ class BasicAssistant(Assistant):
 
     def run(self) -> None:
         """Run the assistant."""
-        self.listen_to_wake_word()
-        self.speak("Hello, how can I help you?")
+        print("listening...")
         while True:
-            message = self.listen()
-            print(message)
-            self.speak(message)
+            if self.listen_to_wake_word():
+                self.speak("Hello, how can I help you?")
+                while True:
+                    message = self.listen()
+                    if message == None:
+                        break
+                    print(message)
+                    self.speak(message)
 
             # command = self.parse_command(message)
             # command()
@@ -128,5 +132,5 @@ class BasicAssistant(Assistant):
 if __name__ == "__main__":
     voice = GVoice(VoiceType.ENGLISH_UNITED_STATES, VoiceVolume.NORMAL)
     listener = BasicListener()
-    assistant = BasicAssistant("friday", voice, listener, wake_word="hi friday")
+    assistant = BasicAssistant("friday", voice, listener, wake_word="hey friday")
     assistant.run()

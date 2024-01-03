@@ -38,11 +38,23 @@ class BasicListener(Listener):
         """
         try:
             with sr.Microphone() as source:
-                self._recognizer.adjust_for_ambient_noise(source, duration=1)
-                audio = self._recognizer.listen(source)
-                message = self._recognizer.recognize_google(audio)
-                print(f"You said: {message}")
-                return message
+                self._recognizer.adjust_for_ambient_noise(source, duration=0.2)
+                ## Added timeout of 5 seconds
+                audio = self._recognizer.listen(source, timeout=5)
+        except sr.WaitTimeoutError:
+            print("5 Seconds Passed")
+            # Is it legal?
+            return "BackToWakeWord"
+        except sr.RequestError as e:
+            print(f"Could not request results: {e}")
+
+        try:
+            ## Where does recognize_google comes from?
+            ## It was the recognizer who threw the UnkownValueError
+            ## The audio threshhold is very low, its enough for the mic to be open for the prgoram to hear anything
+            message = self._recognizer.recognize_google(audio)
+            print(f"You said: {message}")
+            return message
         except sr.RequestError as e:
             print(f"Could not request results: {e}")
         except sr.UnknownValueError:
