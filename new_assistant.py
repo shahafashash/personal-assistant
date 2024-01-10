@@ -121,14 +121,11 @@ class BasicAssistant(Assistant):
             print("Waiting for wake word...")
             if self.listen_to_wake_word():
                 self.speak("Hello, how can I help you?")
-                sentance = []
-                while True:
-                    message = self.listen()
-                    if type(message) is not str:
-                        break
-                    sentance.append(message)
-                print(sentance)
-                self.speak(sentance)
+                message = self.listen()
+                if type(message) is not str:
+                    break
+                print(message)
+                self.speak(message)
 
             # command = self.parse_command(message)
             # command()

@@ -42,7 +42,7 @@ class BasicListener(Listener):
                 audio = self._recognizer.listen(source, timeout=5)
         except sr.WaitTimeoutError:
             print("5 Seconds Passed")
-            return None  ## If there was a 5 seconds silcence or unrecognizable sound, the listener will return None
+            return  ## If there was a 5 seconds silcence or unrecognizable sound, the listener will return None
         except sr.RequestError as e:
             print(f"Could not request results: {e}")
 
