@@ -30,6 +30,7 @@ class Voice(ABC):
     def __init__(self, voice: VoiceType, volume: VoiceVolume) -> None:
         self._voice = voice.value
         self._volume = volume.value
+        mixer.music.set_volume(self._volume)
 
     @property
     def voice(self) -> str:

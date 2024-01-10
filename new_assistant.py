@@ -1,8 +1,12 @@
 from typing import List, Optional, Callable
 from abc import ABC, abstractmethod
-import time
 from voices_new.voice import VoiceType, VoiceVolume, Voice, GVoice
 from listeners.listener import BasicListener
+from sound_effects.effects import SoundEffect
+from openai import OpenAI
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class Assistant(ABC):
@@ -17,6 +21,7 @@ class Assistant(ABC):
         self._voice = voice
         self._listener = listener
         self._wake_word = wake_word if wake_word else self._name.lower()
+        self._client = OpenAI()
 
     @abstractmethod
     def speak(self, text: str | List[str]) -> None:
@@ -72,6 +77,14 @@ class BasicAssistant(Assistant):
         wake_word: Optional[str] = None,
     ) -> None:
         super().__init__(name, voice, listener, wake_word)
+        self._wake_sound = SoundEffect("sound_effects/sounds/wake_sound.wav")
+        self._sleep_sound = SoundEffect("sound_effects/sounds/sleep_sound.wav")
+        self._client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a british personal assistant."},
+            ],
+        )
 
     def speak(self, text: str | List[str]) -> None:
         """Speak text using the voice engine.
@@ -99,11 +112,10 @@ class BasicAssistant(Assistant):
         try:
             while True:
                 message = self.listen()
-                if type(message) is not str:
-                    break
                 if self._wake_word in message.lower():
                     return True
-        except:
+        except Exception as e:
+            print(e)
             return False
 
     def parse_command(self, command: str) -> Callable:
@@ -117,15 +129,37 @@ class BasicAssistant(Assistant):
     def run(self) -> None:
         """Run the assistant."""
         print("listening...")
+        should_wait_for_wake_word = True
         while True:
-            print("Waiting for wake word...")
-            if self.listen_to_wake_word():
-                self.speak("Hello, how can I help you?")
-                message = self.listen()
-                if type(message) is not str:
-                    break
-                print(message)
-                self.speak(message)
+            if should_wait_for_wake_word:
+                while not self.listen_to_wake_word():
+                    pass
+            should_wait_for_wake_word = False
+            self._wake_sound.play()
+            message = self.listen()
+            if not message:
+                self._sleep_sound.play()
+                should_wait_for_wake_word = True
+                continue
+            print(message)
+            response = self._client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "user", "content": message},
+                ],
+            )
+            self.speak(response.choices[0].text)
+
+            # print("Waiting for wake word...")
+            # if self.listen_to_wake_word():
+            #     self._wake_sound.play()
+            #     print("listening...")
+            #     message = self.listen()
+            #     if not message:
+            #         self._sleep_sound.play()
+            #         continue
+            #     print(message)
+            #     self.speak(message)
 
             # command = self.parse_command(message)
             # command()
@@ -133,6 +167,6 @@ class BasicAssistant(Assistant):
 
 if __name__ == "__main__":
     voice = GVoice(VoiceType.ENGLISH_UNITED_STATES, VoiceVolume.NORMAL)
-    listener = BasicListener()
+    listener = BasicListener(energy_threshold=300)
     assistant = BasicAssistant("friday", voice, listener, wake_word="friday")
     assistant.run()
