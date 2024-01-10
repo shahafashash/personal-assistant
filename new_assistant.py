@@ -99,6 +99,8 @@ class BasicAssistant(Assistant):
         try:
             while True:
                 message = self.listen()
+                if type(message) is not str:
+                    break
                 if self._wake_word in message.lower():
                     return True
         except:
@@ -114,12 +116,16 @@ class BasicAssistant(Assistant):
 
     def run(self) -> None:
         """Run the assistant."""
-        self.listen_to_wake_word()
-        self.speak("Hello, how can I help you?")
+        print("listening...")
         while True:
-            message = self.listen()
-            print(message)
-            self.speak(message)
+            print("Waiting for wake word...")
+            if self.listen_to_wake_word():
+                self.speak("Hello, how can I help you?")
+                message = self.listen()
+                if type(message) is not str:
+                    break
+                print(message)
+                self.speak(message)
 
             # command = self.parse_command(message)
             # command()
@@ -128,5 +134,5 @@ class BasicAssistant(Assistant):
 if __name__ == "__main__":
     voice = GVoice(VoiceType.ENGLISH_UNITED_STATES, VoiceVolume.NORMAL)
     listener = BasicListener()
-    assistant = BasicAssistant("friday", voice, listener, wake_word="hi friday")
+    assistant = BasicAssistant("friday", voice, listener, wake_word="friday")
     assistant.run()
