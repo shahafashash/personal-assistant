@@ -39,12 +39,10 @@ class BasicListener(Listener):
         try:
             with sr.Microphone() as source:
                 self._recognizer.adjust_for_ambient_noise(source, duration=0.2)
-                ## Added timeout of 5 seconds
                 audio = self._recognizer.listen(source, timeout=5)
         except sr.WaitTimeoutError:
             print("5 Seconds Passed")
-            # Is it legal?
-            return "BackToWakeWord"
+            return None  ## If there was a 5 seconds silcence or unrecognizable sound, the listener will return None
         except sr.RequestError as e:
             print(f"Could not request results: {e}")
 
